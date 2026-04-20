@@ -1,9 +1,6 @@
 -- TrendStep schema. Run in Supabase SQL editor.
 -- Community-uploaded tutorials. A trend is defined by its TikTok sound.
 
--- Required extensions first, so indexes below can use gin_trgm_ops.
-create extension if not exists pg_trgm;
-
 drop table if exists public.reports cascade;
 drop table if exists public.votes cascade;
 drop table if exists public.steps cascade;
@@ -19,8 +16,10 @@ create table public.trends (
   difficulty text not null check (difficulty in ('easy','medium','hard')),
   created_at timestamptz not null default now()
 );
-create index trends_name_trgm on public.trends using gin (name gin_trgm_ops);
-create index trends_music_title_trgm on public.trends using gin (music_title gin_trgm_ops);
+-- Basic lowered indexes for ILIKE search (good enough for launch scale;
+-- add pg_trgm GIN indexes later if search slows down).
+create index trends_name_lower    on public.trends (lower(name));
+create index trends_music_lower   on public.trends (lower(music_title));
 
 create table public.tutorials (
   id uuid primary key default gen_random_uuid(),
@@ -47,8 +46,6 @@ create table public.steps (
   count text not null default ''
 );
 create index steps_tutorial_order on public.steps (tutorial_id, "order");
-
--- (pg_trgm is created at the top of this file)
 
 create table public.votes (
   tutorial_id uuid not null references public.tutorials(id) on delete cascade,
