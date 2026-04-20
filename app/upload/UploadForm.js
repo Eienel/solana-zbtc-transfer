@@ -214,7 +214,7 @@ export default function UploadForm() {
                 onChange={(e) => update(i, "description", e.target.value)}
                 rows={2}
                 className="input resize-none"
-                placeholder="Description (uses left/right - mirror mode will swap)"
+                placeholder="Description (what does the body do?)"
               />
               <input
                 name="step_count"
