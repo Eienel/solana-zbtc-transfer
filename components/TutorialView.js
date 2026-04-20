@@ -38,7 +38,7 @@ export default function TutorialView({ tutorial }) {
 
   return (
     <div className="space-y-4">
-      <TikTokEmbed url={tutorial.tiktok_url} />
+      <TikTokEmbed url={tutorial.tiktok_url} videoId={tutorial.video_id} />
 
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">

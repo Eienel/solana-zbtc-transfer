@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { getServiceClient } from "@/lib/supabase";
 import {
+  extractTikTokId,
   fetchTikTokOEmbed,
   normalizeTikTokUrl,
+  resolveTikTokVideoId,
   scrapeTikTokMusic,
 } from "@/lib/tiktok";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -214,11 +216,18 @@ export async function submitAction(_prev, formData) {
     rawHandle ||
     (oembed?.author_unique_id ? `@${oembed.author_unique_id}` : null);
 
+  // Ensure we store a URL that contains /video/{id} so the embed works.
+  let canonical = url;
+  if (!extractTikTokId(canonical)) {
+    const vid = await resolveTikTokVideoId(canonical);
+    if (vid) canonical = `https://www.tiktok.com/@placeholder/video/${vid}`;
+  }
+
   const { data: tutorial, error: tutErr } = await sb
     .from("tutorials")
     .insert({
       trend_id: trend.id,
-      tiktok_url: url,
+      tiktok_url: canonical,
       music_id: music.music_id,
       author_handle: handle,
       author_name: oembed?.author_name || null,

@@ -3,8 +3,8 @@ import { extractTikTokId } from "@/lib/tiktok";
 
 // Use TikTok's official player iframe so the video actually plays inline.
 // Falls back to a "Watch on TikTok" link if we can't derive the video id.
-export default function TikTokEmbed({ url }) {
-  const id = extractTikTokId(url);
+export default function TikTokEmbed({ url, videoId }) {
+  const id = videoId || extractTikTokId(url);
 
   if (!id) {
     return (
