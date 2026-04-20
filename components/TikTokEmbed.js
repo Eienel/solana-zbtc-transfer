@@ -1,58 +1,34 @@
 "use client";
-import { useEffect, useRef } from "react";
 import { extractTikTokId } from "@/lib/tiktok";
 
-// Renders TikTok's blockquote embed + loads their embed script.
-// oembed.html is ideal when available (server-fetched); otherwise fall back
-// to a reconstructed blockquote using the video id.
-export default function TikTokEmbed({ url, oembedHtml }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const existing = document.querySelector('script[src*="tiktok.com/embed.js"]');
-    if (!existing) {
-      const s = document.createElement("script");
-      s.src = "https://www.tiktok.com/embed.js";
-      s.async = true;
-      document.body.appendChild(s);
-    } else if (window.tiktokEmbed) {
-      window.tiktokEmbed.lib.render(ref.current ? [ref.current] : undefined);
-    }
-  }, [url, oembedHtml]);
-
-  if (oembedHtml) {
-    return (
-      <div
-        ref={ref}
-        className="tiktok-embed overflow-hidden rounded-2xl"
-        dangerouslySetInnerHTML={{ __html: oembedHtml }}
-      />
-    );
-  }
-
+// Use TikTok's official player iframe so the video actually plays inline.
+// Falls back to a "Watch on TikTok" link if we can't derive the video id.
+export default function TikTokEmbed({ url }) {
   const id = extractTikTokId(url);
+
   if (!id) {
     return (
-      <div className="card p-4 text-mute text-sm">
-        Invalid TikTok URL.
-      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="card p-4 block text-mute text-sm"
+      >
+        Watch on TikTok ↗
+      </a>
     );
   }
 
+  const src = `https://www.tiktok.com/player/v1/${id}?music_info=0&description=0`;
   return (
-    <div ref={ref} className="tiktok-embed overflow-hidden rounded-2xl">
-      <blockquote
-        className="tiktok-embed"
-        cite={url}
-        data-video-id={id}
-        style={{ maxWidth: "605px", minWidth: "100%" }}
-      >
-        <section>
-          <a href={url} target="_blank" rel="noreferrer">
-            Watch on TikTok
-          </a>
-        </section>
-      </blockquote>
+    <div className="relative w-full aspect-[9/16] bg-black rounded-2xl overflow-hidden">
+      <iframe
+        src={src}
+        className="absolute inset-0 w-full h-full"
+        allow="fullscreen; picture-in-picture; encrypted-media; autoplay"
+        allowFullScreen
+        title="TikTok video"
+      />
     </div>
   );
 }

@@ -9,6 +9,11 @@ export default async function HomePage({ searchParams }) {
   const q = (searchParams?.q || "").toString();
   const trends = await searchTrends(q);
 
+  // Trending = trends that have at least one upvote. Top 4.
+  const trending = !q ? trends.filter((t) => t.total_votes > 0).slice(0, 4) : [];
+  const trendingIds = new Set(trending.map((t) => t.id));
+  const rest = trends.filter((t) => !trendingIds.has(t.id));
+
   return (
     <main className="space-y-5">
       <header className="pt-2 flex items-end justify-between">
@@ -39,11 +44,35 @@ export default async function HomePage({ searchParams }) {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {trends.map((t) => (
-            <TrendCard key={t.id} trend={t} />
-          ))}
-        </div>
+        <>
+          {trending.length > 0 && (
+            <section className="space-y-2">
+              <h2 className="font-semibold flex items-center gap-2">
+                <span>🔥 Trending</span>
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {trending.map((t) => (
+                  <TrendCard key={t.id} trend={t} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {rest.length > 0 && (
+            <section className="space-y-2">
+              {trending.length > 0 && (
+                <h2 className="font-semibold text-mute">
+                  {q ? "Results" : "All trends"}
+                </h2>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                {rest.map((t) => (
+                  <TrendCard key={t.id} trend={t} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </main>
   );
