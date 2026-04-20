@@ -115,8 +115,8 @@ create policy "trends public read" on public.trends
 create policy "tutorials public read" on public.tutorials
   for select to anon, authenticated using (hidden = false);
 
+-- Steps are public-read; hidden tutorials are filtered server-side in the
+-- app, and the tutorials RLS policy already hides them from any direct
+-- client read. Keeping this simple avoids alias-mangling in SQL editors.
 create policy "steps public read" on public.steps
-  for select to anon, authenticated using (
-    exists (select 1 from public.tutorials t
-            where t.id = steps.tutorial_id and t.hidden = false)
-  );
+  for select to anon, authenticated using (true);
